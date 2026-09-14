@@ -22,6 +22,8 @@ export function TaskUpdateModal({ isOpen, onClose, task, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const isChecklistTask = task?.type === 'checklist' || task?.task_code?.toLowerCase().includes('chk');
+
   useEffect(() => {
     if (task) {
       setSelectedOutcome('Completed');
@@ -53,6 +55,11 @@ export function TaskUpdateModal({ isOpen, onClose, task, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isChecklistTask && selectedOutcome === 'Extend Date') {
+      setError('Checklist tasks cannot be extended. Only Delegation tasks can be extended.');
+      return;
+    }
 
     if (selectedOutcome === 'Extend Date' && !extensionDate) {
       setError('Aapko Ye Task Kab Karna Hai (Please select a new extension date).');
@@ -148,36 +155,50 @@ export function TaskUpdateModal({ isOpen, onClose, task, onSuccess }) {
           <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1.5">{task.title || task.description}</h4>
         </div>
 
-        {/* REQUIREMENT #2: ONLY 2 STATUS OPTIONS: Completed OR Extend Date */}
+        {/* STATUS OPTIONS: Checklist Tasks CANNOT be extended, only Completed. Delegation tasks have both options */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
             Status Outcome *
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setSelectedOutcome('Completed')}
-              className={`flex items-center justify-center space-x-2 p-3 rounded-xl border text-xs font-bold transition-all ${selectedOutcome === 'Completed'
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-500 shadow-xs'
-                : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+          {isChecklistTask ? (
+            <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-300 text-xs font-extrabold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Completed</span>
+              </div>
+              <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800">
+                Checklist tasks cannot be extended
+              </span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedOutcome('Completed')}
+                className={`flex items-center justify-center space-x-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                  selectedOutcome === 'Completed'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-500 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                 }`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Completed</span>
-            </button>
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Completed</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setSelectedOutcome('Extend Date')}
-              className={`flex items-center justify-center space-x-2 p-3 rounded-xl border text-xs font-bold transition-all ${selectedOutcome === 'Extend Date'
-                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-500 shadow-xs'
-                : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+              <button
+                type="button"
+                onClick={() => setSelectedOutcome('Extend Date')}
+                className={`flex items-center justify-center space-x-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                  selectedOutcome === 'Extend Date'
+                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-500 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                 }`}
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Extend Date</span>
-            </button>
-          </div>
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Extend Date</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* REQUIREMENT #2: Show Date Picker ONLY IF "Extend Date" is selected */}

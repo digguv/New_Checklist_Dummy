@@ -73,14 +73,16 @@ export function MyTasksPage() {
           </p>
         </div>
 
-        {(isAdmin || isManager) && (
-          <Link
-            to="/task-assignment"
-            className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all"
-          >
-            <span>Task Assignment Hub</span>
-          </Link>
-        )}
+        <div className="flex items-center space-x-2">
+          {(isAdmin || isManager) && (
+            <Link
+              to="/task-assignment"
+              className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all"
+            >
+              <span>Task Assignment Hub</span>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* REQUIREMENT #1: Strictly ONLY 2 Tabs: Checklist & Delegation */}
@@ -209,3 +211,4 @@ export function MyTasksPage() {
     </div>
   );
 }
+

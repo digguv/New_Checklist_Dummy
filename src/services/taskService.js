@@ -307,4 +307,70 @@ export const taskService = {
     const tasks = getStoredTasks();
     return tasks.filter((t) => t.type === 'checklist');
   },
+
+  // Leave Delegation / Task Transfer Engine
+  async transferTasks({ fromUserId, toUserId, startDate, endDate, reason }, currentUser) {
+    const tasks = getStoredTasks();
+    const fromUser = INITIAL_USERS.find((u) => u.id === fromUserId);
+    const toUser = INITIAL_USERS.find((u) => u.id === toUserId);
+
+    if (!fromUser || !toUser) throw new Error('Selected employees not found');
+    if (fromUserId === toUserId) throw new Error('Cannot transfer tasks to the same user');
+
+    const start = startDate ? new Date(startDate) : new Date('1970-01-01');
+    const end = endDate ? new Date(endDate + 'T23:59:59') : new Date('2099-12-31');
+
+    let transferredCount = 0;
+
+    const updatedTasks = tasks.map((task) => {
+      if (
+        task.assigned_to === fromUserId &&
+        task.status !== 'Completed' &&
+        task.status !== 'Not Done'
+      ) {
+        const taskDueDate = new Date(task.due_date);
+        if (taskDueDate >= start && taskDueDate <= end) {
+          transferredCount++;
+
+          saveHistory({
+            task_id: task.id,
+            performed_by_name: currentUser ? currentUser.full_name : 'System Admin',
+            action: 'Task Transferred (Leave Delegation)',
+            details: `Transferred from ${fromUser.full_name} to ${toUser.full_name} due to leave (${startDate || 'Any'} to ${endDate || 'Any'}). Reason: ${reason || 'On Leave'}`,
+          });
+
+          return {
+            ...task,
+            assigned_to: toUser.id,
+            assigned_to_name: toUser.full_name,
+            transferred_from: fromUser.id,
+            transferred_from_name: fromUser.full_name,
+            transfer_reason: reason || 'Leave Delegation',
+            updated_at: new Date().toISOString(),
+          };
+        }
+      }
+      return task;
+    });
+
+    if (transferredCount === 0) {
+      throw new Error('No active or pending tasks found for this user in the specified date range.');
+    }
+
+    saveStoredTasks(updatedTasks);
+
+    // Send notification to substitute user
+    notificationService.notifyTaskTransferred({
+      toUserId: toUser.id,
+      fromUserName: fromUser.full_name,
+      taskCount: transferredCount,
+      reason,
+    });
+
+    return {
+      transferredCount,
+      fromUserName: fromUser.full_name,
+      toUserName: toUser.full_name,
+    };
+  },
 };

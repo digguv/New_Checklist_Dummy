@@ -7,6 +7,7 @@ import { ProfilePage } from './pages/auth/ProfilePage';
 import { DashboardRouter } from './pages/dashboards/DashboardRouter';
 import { MyTasksPage } from './pages/tasks/MyTasksPage';
 import { TaskAssignmentPage } from './pages/tasks/TaskAssignmentPage';
+import { LeaveRequestsPage } from './pages/leave/LeaveRequestsPage';
 import { CalendarPage } from './pages/calendar/CalendarPage';
 import { HolidaysPage } from './pages/holidays/HolidaysPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
@@ -17,6 +18,19 @@ function ProtectedRoute({ children }) {
   if (loading) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading session...</div>;
   if (!user) return <Navigate to="/login" replace />;
   return children;
+}
+
+function AdminOnlyRoute({ children }) {
+  const { isAdmin } = useAuth();
+  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+function TaskAssignmentRoute({ children }) {
+  const { user, isAdmin, isManager } = useAuth();
+  if (isAdmin || isManager) return children;
+  if (user?.self_assign_enabled !== false) return children;
+  return <Navigate to="/my-tasks" replace />;
 }
 
 export default function App() {
@@ -34,14 +48,28 @@ export default function App() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         
-        {/* Requirement #5 Sequential Navigation Order */}
         <Route path="dashboard" element={<DashboardRouter />} />
         <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="task-assignment" element={<TaskAssignmentPage />} />
+        <Route
+          path="task-assignment"
+          element={
+            <TaskAssignmentRoute>
+              <TaskAssignmentPage />
+            </TaskAssignmentRoute>
+          }
+        />
         <Route path="my-tasks" element={<MyTasksPage />} />
+        <Route path="leave-requests" element={<LeaveRequestsPage />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="holidays" element={<HolidaysPage />} />
-        <Route path="masters" element={<MastersPage />} />
+        <Route
+          path="masters"
+          element={
+            <AdminOnlyRoute>
+              <MastersPage />
+            </AdminOnlyRoute>
+          }
+        />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 

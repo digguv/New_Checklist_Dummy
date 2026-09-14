@@ -9,23 +9,33 @@ import {
   Calendar,
   PartyPopper,
   Sliders,
-  Building2
+  Building2,
+  Plane
 } from 'lucide-react';
 
 export function Sidebar() {
-  const { role } = useAuth();
+  const { user, role, isAdmin, isManager } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
 
-  // REQUIREMENT #5: Strict Sequence: Dashboard, Notification, Task Assignment, My Task, Calendar, Holiday, Masters
-  const navItems = [
+  const rawNavItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Notification', path: '/notifications', icon: Bell },
-    { label: 'Task Assignment', path: '/task-assignment', icon: ClipboardList },
+    { label: 'Task Assignment', path: '/task-assignment', icon: ClipboardList, requiresSelfAssignOrManager: true },
     { label: 'My Task', path: '/my-tasks', icon: CheckSquare },
+    { label: 'Leave Requests', path: '/leave-requests', icon: Plane },
     { label: 'Calendar', path: '/calendar', icon: Calendar },
     { label: 'Holiday', path: '/holidays', icon: PartyPopper },
-    { label: 'Masters', path: '/masters', icon: Sliders },
+    { label: 'Masters', path: '/masters', icon: Sliders, adminOnly: true },
   ];
+
+  const navItems = rawNavItems.filter((item) => {
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.requiresSelfAssignOrManager) {
+      if (isAdmin || isManager) return true;
+      return user?.self_assign_enabled !== false;
+    }
+    return true;
+  });
 
   return (
     <aside

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { notificationService } from '../services/notificationService';
 
 const AuthContext = createContext();
 
@@ -28,6 +29,7 @@ export function AuthProvider({ children }) {
     try {
       const loggedUser = await authService.login(email, password);
       setUser(loggedUser);
+      notificationService.notifyLogin(loggedUser);
       return loggedUser;
     } finally {
       setLoading(false);
@@ -39,6 +41,7 @@ export function AuthProvider({ children }) {
     try {
       const newUser = await authService.signup(userData);
       setUser(newUser);
+      notificationService.notifyLogin(newUser);
       return newUser;
     } finally {
       setLoading(false);
@@ -48,6 +51,9 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     setLoading(true);
     try {
+      if (user) {
+        notificationService.notifyLogout(user);
+      }
       await authService.logout();
       setUser(null);
     } finally {
@@ -60,6 +66,7 @@ export function AuthProvider({ children }) {
     try {
       const switchedUser = await authService.switchDemoRole(targetRole);
       setUser(switchedUser);
+      notificationService.notifyLogin(switchedUser);
       return switchedUser;
     } finally {
       setLoading(false);

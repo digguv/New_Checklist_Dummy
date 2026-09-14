@@ -98,4 +98,73 @@ export const notificationService = {
       linkUrl: '/task-assignment',
     });
   },
+
+  async notifyTaskTransferred({ toUserId, fromUserName, taskCount, reason }) {
+    return this.sendNotification({
+      userId: toUserId,
+      title: '🔄 Tasks Transferred (Leave Coverage)',
+      message: `${taskCount} task(s) transferred to you from ${fromUserName} due to leave (${reason || 'Leave Delegation'})`,
+      type: 'task_transferred',
+      linkUrl: '/my-tasks',
+    });
+  },
+
+  // User Activity Tracking (Login / Logout / Leave)
+  async notifyLogin(user) {
+    if (!user) return;
+    return this.sendNotification({
+      userId: null, // Broadcast to activity center
+      title: '🟢 User Session Started',
+      message: `User ${user.full_name} (${user.role} - ${user.department_name || 'Operations'}) logged into the system.`,
+      type: 'user_login',
+      linkUrl: '/notifications',
+    });
+  },
+
+  async notifyLogout(user) {
+    if (!user) return;
+    return this.sendNotification({
+      userId: null, // Broadcast to activity center
+      title: '🔴 User Logged Out',
+      message: `User ${user.full_name} (${user.role}) logged out of the system.`,
+      type: 'user_logout',
+      linkUrl: '/notifications',
+    });
+  },
+
+  async notifyLeaveRequested({ user, startDate, endDate, reason, wantTransfer, preferredSubstituteName }) {
+    const transferMsg = wantTransfer && preferredSubstituteName
+      ? ` (Requested task transfer to ${preferredSubstituteName})`
+      : '';
+    return this.sendNotification({
+      userId: null,
+      title: '✈️ New Leave Request Submitted',
+      message: `${user.full_name} submitted a leave request from ${startDate} to ${endDate}. Reason: "${reason}"${transferMsg}`,
+      type: 'leave_requested',
+      linkUrl: '/leave-requests',
+    });
+  },
+
+  async notifyLeaveApproved({ leaveRequest, approvedBy, substituteName, transferredCount }) {
+    const subMsg = substituteName
+      ? ` (Tasks transferred to ${substituteName} - ${transferredCount} task(s))`
+      : '';
+    return this.sendNotification({
+      userId: leaveRequest.user_id,
+      title: '✅ Leave Approved',
+      message: `Admin ${approvedBy.full_name} approved your leave request for ${leaveRequest.start_date} to ${leaveRequest.end_date}${subMsg}`,
+      type: 'leave_approved',
+      linkUrl: '/leave-requests',
+    });
+  },
+
+  async notifyLeaveRejected({ leaveRequest, rejectedBy, reason }) {
+    return this.sendNotification({
+      userId: leaveRequest.user_id,
+      title: '❌ Leave Request Declined',
+      message: `Admin ${rejectedBy.full_name} declined your leave request (${leaveRequest.start_date} to ${leaveRequest.end_date}). Reason: ${reason || 'N/A'}`,
+      type: 'leave_rejected',
+      linkUrl: '/leave-requests',
+    });
+  },
 };
