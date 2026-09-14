@@ -4,17 +4,15 @@ import { useAuth } from '../../context/AuthContext';
 import { DEPARTMENTS, FREQUENCIES, TASK_PRIORITY } from '../../config/constants';
 import { INITIAL_USERS } from '../../services/mockData';
 import { Modal } from '../../components/common/Modal';
-import { TaskTransferModal } from '../../components/tasks/TaskTransferModal';
 import { StatusBadge, PriorityBadge } from '../../components/common/StatusBadge';
 import { formatDate } from '../../lib/utils';
-import { Plus, Edit2, Trash2, Search, Users, Check, ChevronDown, X, AlertCircle, ArrowRightLeft } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Users, Check, ChevronDown, X, AlertCircle } from 'lucide-react';
 
 export function TaskAssignmentPage() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
   // Form Fields - REQUIREMENT #1: Task Title is REMOVED! Only Description is used.
@@ -202,14 +200,6 @@ export function TaskAssignmentPage() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setIsTransferModalOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-extrabold shadow-md shadow-amber-500/20 transition-all"
-          >
-            <ArrowRightLeft className="w-4 h-4" />
-            <span>Task Transfer (Leave)</span>
-          </button>
-
           <button
             onClick={handleOpenCreateModal}
             className="flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-indigo-600/20 transition-all"
@@ -571,13 +561,6 @@ export function TaskAssignmentPage() {
           </div>
         </form>
       </Modal>
-
-      {/* Task Transfer / Leave Delegation Modal */}
-      <TaskTransferModal
-        isOpen={isTransferModalOpen}
-        onClose={() => setIsTransferModalOpen(false)}
-        onSuccess={loadTasks}
-      />
     </div>
   );
 }
