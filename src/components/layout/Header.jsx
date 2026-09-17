@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useSystem } from '../../context/SystemContext';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { Bell, Menu, User, LogOut, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export function Header({ onOpenMobileMenu }) {
   const { user, logout } = useAuth();
+  const { currentSystem } = useSystem();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [showNotifPopover, setShowNotifPopover] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -28,8 +30,13 @@ export function Header({ onOpenMobileMenu }) {
           <Menu className="w-5 h-5" />
         </button>
         <div className="hidden sm:block">
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Acme Corporate Corp</p>
-          <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Checklist & Delegation Center</h2>
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Acme Corporate Enterprise</p>
+          <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <span>{currentSystem.name}</span>
+            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-2 py-0.5 rounded-full">
+              {currentSystem.badge}
+            </span>
+          </h2>
         </div>
       </div>
 

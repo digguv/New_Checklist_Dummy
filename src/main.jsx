@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { SystemProvider } from './context/SystemContext';
 import App from './App';
 import './index.css';
 
@@ -13,7 +14,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <ThemeProvider>
           <NotificationProvider>
-            <App />
+            <SystemProvider>
+              <App />
+            </SystemProvider>
           </NotificationProvider>
         </ThemeProvider>
       </AuthProvider>
